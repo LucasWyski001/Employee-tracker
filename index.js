@@ -1,6 +1,12 @@
 const fs = require('fs');
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
+const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'WysoczanskiDenLuc01!',
+    database: 'company_db',
+  });
 function displayMenu()
 {
     inquirer.prompt([
@@ -9,17 +15,29 @@ function displayMenu()
           type: 'list',
           message: 'What would you like to do?',
           choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View all Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit'],
-          pageSize: 8,
         },
       ])
       .then((answers) =>{
           var userChoice = answers.homescreen;
           console.log("This is my user choice " + userChoice);
           if(userChoice == "View All Employees")
-          {
-              console.log("You chose the view employee option");
-              displayMenu();
-          }
+            {
+                console.log("Please see all the Employees.");
+                    const viewAllEmployeesQuery = `
+                    SELECT employees.id AS id, employees.first_name AS first_name, employees.last_name AS last_name, roles.title AS title, department.department_name AS department, roles.salary AS salary, CONCAT(managers.first_name, " ", managers.last_name) AS manager
+                    FROM employees
+                    JOIN roles ON employees.role_id = roles.id
+                    JOIN department ON roles.department_id = department.id
+                    LEFT JOIN employees AS managers ON employees.manager_id = managers.id;
+                    `;
+                    connection.query(viewAllEmployeesQuery, function (err, results) {
+                    if (err) throw err;
+                    // Print the results in a formatted way
+                    console.log("");
+                    console.table(results);
+                    displayMenu();
+                    })
+            }
           else if(userChoice == "Add Employee")
           {
               console.log("Please add an employee!");
@@ -34,50 +52,130 @@ function displayMenu()
                     name: "lastName",
                     message: "Please enter employee last name!"
                 },
+                {
+                    type: "list",
+                    name: "roleID",
+                    message: "Please select employee role!",
+                    choices:["Sales Lead", "Lead Engineer", "Software Engineer", "Lawyer", "Accountant"],
+                },
+                {
+                    type: "list",
+                    name: "managerID",
+                    message: "Please select employee role!",
+                    choices:["Finn Human", "Jake Dog", "Bobby Lee", "Theo Von", "Tom Segura"],
+                },
+                {
+                    type: "list",
+                    name: "managerID",
+                    message: "Please select a manager",
+                    choices:["Finn Human", "Jake Dog", "Bobby Lee", "Theo Von", "Tom Segura"],
+                },
               ])
               .then((employeeAnswer) =>{
                 const firstName = employeeAnswer.firstName;
                 const lastName = employeeAnswer.lastName;
+                const userRoleChoice = employeeAnswer.roleID;
+                let idNumberAssigned;
+                let managerAssigned;
+
+                if(userRoleChoice == "Sales Lead")
+                {
+                    idNumberAssigned = 1;
+                }
+                else if(userRoleChoice == "Lead Engineer")
+                {
+                    idNumberAssigned = 2;
+                }
+                else if(userRoleChoice == "Software Engineer")
+                {
+                    idNumberAssigned = 3;
+                }
+                else if(userRoleChoice == "Lawyer")
+                {
+                    idNumberAssigned = 4;
+                }
+                else if(userRoleChoice == "Accountant")
+                {
+                    idNumberAssigned = 5;
+                }
+
+                if(userManagerChoice == "Finn Human")
+                {
+                    managerAssigned =1;
+                }
+                else if(userManagerChoice == "Theo Von")
+                {
+                    managerAssigned = 4;
+                }
                 console.log("Employee First Name: " + firstName);
                 console.log("Employee Last Name: " + lastName);
-                displayMenu();
+                const addEmployeeInformation = `INSERT INTO employees (first_name, last_name, role_id) VALUES (?, ?, ?)`;
+                connection.query(
+                    addEmployeeInformation,[firstName, lastName, idNumberAssigned],
+                    function (err, insertResult)
+                    {
+                        if (err) throw err;
+                        console.log("Employee added successfully!");
+                        displayMenu();
+                    }
+                )
               })
           }
           else if(userChoice == "Update Employee Role")
           {
-              console.log("update employee role here");
+              console.log("You chose the update employee route");
               displayMenu();
           }
           else if(userChoice == "View all Roles")
-          {
-              console.log("You chose the view all roles route");
-              displayMenu();
-          }
+            {
+                console.log("Please see all the roles information.");
+                    const viewAllEmployeesQuery = `
+                    SELECT roles.id AS id, roles.title AS title, department.department_name AS department, roles.salary AS salary
+                    FROM department
+                    JOIN roles ON department.id = roles.department_id;
+                    `;
+                    connection.query(viewAllEmployeesQuery, function (err, results) {
+                    if (err) throw err;
+                    // Print the results in a formatted way
+                    console.log("");
+                    console.table(results);
+                    displayMenu();
+                    })
+            }
           else if(userChoice == "Add Role")
           {
               console.log("You chose the add role route");
               displayMenu();
           }
           else if(userChoice == "View All Departments")
-          {
-              console.log("You chose the view all department routes");
-              displayMenu();
-          }
+            {
+                console.log("Please see all the Departments.");
+                    const viewAllEmployeesQuery = `
+                    SELECT * FROM company_db.department;
+                    `;
+                    connection.query(viewAllEmployeesQuery, function (err, results) {
+                    if (err) throw err;
+                    // Print the results in a formatted way
+                    console.log("");
+                    console.table(results);
+                    displayMenu();
+                    })
+            }
           else if(userChoice == "Add Department")
           {
-              console.log("What department would you like to add?");
-              inquirer.prompt([
-                {
-                type: 'input',
-                name: 'departmentName',
-                message: 'please enter a department name!'
-                },
-              ])
-              .then((departmentName) =>{
-                const department = departmentName.department;
-                console.log("Depart name added to database: " + department);
-                displayMenu();
-              })
+            console.log("Please add an department!");
+            inquirer.prompt([
+              {
+                  type: "input",
+                  name: "departmentName",
+                  message: "Please enter a department name!"
+              },
+            ])
+            .then((departmentAnswer) =>{
+              const addedDepartment = departmentAnswer.departmentName;
+              console.log("Department Name Added: " + addedDepartment);
+              displayMenu();
+            })
           }
           else if(userChoice == "Quit")
           {
@@ -87,7 +185,11 @@ function displayMenu()
       })
 }
 displayMenu();
-// // module.export = query;
+
+
+
+
+
 
 
 
