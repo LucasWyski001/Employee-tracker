@@ -121,10 +121,48 @@ function displayMenu()
                 )
               })
           }
-          else if(userChoice == "Update Employee Role")
-          {
-              console.log("You chose the update employee route");
-              displayMenu();
+          else if (userChoice == "Update Employee Role") {
+            console.log("You chose the update employee route");
+            inquirer.prompt([
+                {
+                    type: "list",
+                    name: "employee",
+                    message: "Please select an employee!",
+                    choices: ["Finn Human", "Jake Dog", "Bobby Lee", "Theo Von", "Tom Segura"]
+                },
+                {
+                    type: "list",
+                    name: "role",
+                    message: "Please select role!",
+                    choices: ["Sales Lead", "Lead Engineer", "Software Engineer", "Lawyer", "Accountant"]
+                }
+            ])
+            .then((updateAnswer) => {
+                const selectedEmployee = updateAnswer.employee;
+                const selectedRole = updateAnswer.role;
+                let idNumberAssigned;
+                if (selectedRole == "Sales Lead") {
+                    idNumberAssigned = 1;
+                } else if (selectedRole == "Lead Engineer") {
+                    idNumberAssigned = 2;
+                } else if (selectedRole == "Software Engineer") {
+                    idNumberAssigned = 3;
+                } else if (selectedRole == "Lawyer") {
+                    idNumberAssigned = 4;
+                } else if (selectedRole == "Accountant") {
+                    idNumberAssigned = 5;
+                }
+                const updateEmployeeInformation = `
+                    UPDATE employees
+                    SET role_id = ?
+                    WHERE CONCAT(first_name, ' ', last_name) = ?;
+                `;
+                connection.query(updateEmployeeInformation, [idNumberAssigned, selectedEmployee], function (err, updateResult) {
+                    if (err) throw err;
+                    console.log("Employee role updated successfully!");
+                    displayMenu();
+                });
+            });
           }
           else if(userChoice == "View all Roles")
             {
@@ -145,7 +183,46 @@ function displayMenu()
           else if(userChoice == "Add Role")
           {
               console.log("You chose the add role route");
-              displayMenu();
+              inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'title',
+                    message: 'please enter new role'
+                },
+                {
+                    type: 'number',
+                    name: 'salary',
+                    message: 'please enter new roles salary'
+                },
+                {
+                    type: 'list',
+                    name: 'department_id',
+                    message: 'please select the new roles department',
+                    choices: ["Sales", "Engineering", "Finance", "Legal"]
+                },
+              ]).then((response)=>{
+                const newRole = response.title;
+                const salary = response.salary;
+                const dept = response.department_id;
+                let deptNum;
+                if(dept == "Sales"){
+                    deptNum = 1;
+                }else if(dept == "Engineering"){
+                    deptNum = 2;
+                }else if(dept == "Finance"){
+                    deptNum = 3;
+                }else if(dept =="Legal"){
+                    deptNum = 4;
+                }
+                const addRole = `INSERT INTO roles (title, salary, department_id) VALUES (?,?,?)`;
+                connection.query(addRole,[newRole, salary, deptNum],
+                    function(err,  insertResult){
+                        if(err) throw err;
+                        console.log("Role added successfully");
+                        displayMenu();
+                    })
+              })
+
           }
           else if(userChoice == "View All Departments")
             {
@@ -161,21 +238,28 @@ function displayMenu()
                     displayMenu();
                     })
             }
-          else if(userChoice == "Add Department")
-          {
-            console.log("Please add an department!");
-            inquirer.prompt([
-              {
-                  type: "input",
-                  name: "departmentName",
-                  message: "Please enter a department name!"
-              },
-            ])
-            .then((departmentAnswer) =>{
-              const addedDepartment = departmentAnswer.departmentName;
-              console.log("Department Name Added: " + addedDepartment);
-              displayMenu();
-            })
+            else if(userChoice == "Add Department") {
+                console.log("Please add a department.");
+                inquirer.prompt([
+                    {
+                        type: "input",
+                        name: "departmentName",
+                        message: "Please add a new department."
+                    },
+                    ])
+                  .then((employeeAnswer) => {
+                    const departmentName = employeeAnswer.departmentName;
+                    const addDepartment = `INSERT INTO department (department_name) VALUES (?)`;
+                    connection.query(
+                        addDepartment,[departmentName],
+                        function (err, insertResult)
+                        {
+                          if (err) throw err;
+                          console.log(" New department added!");
+                          displayMenu();
+                        }
+                    )
+                  })
           }
           else if(userChoice == "Quit")
           {
