@@ -38,6 +38,8 @@ function displayMenu()
                     displayMenu();
                     })
             }
+
+
           else if(userChoice == "Add Employee")
           {
               console.log("Please add an employee!");
@@ -77,6 +79,8 @@ function displayMenu()
                 const userRoleChoice = employeeAnswer.roleID;
                 let idNumberAssigned;
                 let managerAssigned;
+                let userManagerChoice;
+                let ManagerChoice;
 
                 if(userRoleChoice == "Sales Lead")
                 {
@@ -101,17 +105,19 @@ function displayMenu()
 
                 if(userManagerChoice == "Finn Human")
                 {
-                    managerAssigned =1;
+                    ManagerChoice =1;
                 }
+
+
                 else if(userManagerChoice == "Theo Von")
                 {
-                    managerAssigned = 4;
+                    ManagerChoice = 4;
                 }
                 console.log("Employee First Name: " + firstName);
                 console.log("Employee Last Name: " + lastName);
                 const addEmployeeInformation = `INSERT INTO employees (first_name, last_name, role_id) VALUES (?, ?, ?)`;
                 connection.query(
-                    addEmployeeInformation,[firstName, lastName, idNumberAssigned],
+                    addEmployeeInformation,[firstName, lastName, idNumberAssigned, managerAssigned],
                     function (err, insertResult)
                     {
                         if (err) throw err;
@@ -121,6 +127,8 @@ function displayMenu()
                 )
               })
           }
+
+
           else if (userChoice == "Update Employee Role") {
             console.log("You chose the update employee route");
             inquirer.prompt([
@@ -164,6 +172,8 @@ function displayMenu()
                 });
             });
           }
+
+
           else if(userChoice == "View all Roles")
             {
                 console.log("Please see all the roles information.");
@@ -180,6 +190,8 @@ function displayMenu()
                     displayMenu();
                     })
             }
+
+
           else if(userChoice == "Add Role")
           {
               console.log("You chose the add role route");
@@ -224,6 +236,8 @@ function displayMenu()
               })
 
           }
+
+
           else if(userChoice == "View All Departments")
             {
                 console.log("Please see all the Departments.");
@@ -238,6 +252,8 @@ function displayMenu()
                     displayMenu();
                     })
             }
+
+
             else if(userChoice == "Add Department") {
                 console.log("Please add a department.");
                 inquirer.prompt([
@@ -261,6 +277,8 @@ function displayMenu()
                     )
                   })
           }
+
+
           else if(userChoice == "Quit")
           {
               console.log("You chose the quit route");
@@ -269,17 +287,3 @@ function displayMenu()
       })
 }
 displayMenu();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
